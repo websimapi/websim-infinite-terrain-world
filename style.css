@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+}
+
+#scene-container {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
+body {
+    margin: 0;
+    font-family: sans-serif;
+}
+
+#scene-container {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
+/* Style the stamina bar */
+#stamina-bar {
+    /* Transition is handled inline via JS for width */
+    box-shadow: inset 0 -1px 1px rgba(0,0,0,0.15);
+}
+
+/* Add a subtle pulse to the dance button when active? Maybe later */
+/* button:active {} */
+
