@@ -1,24 +1,5 @@
 export const config = {
     character: {
-        speed: 5, // Units per second
-        runMultiplier: 2,
-        jumpHeight: 8,
-        gravity: -20, // Units per second squared
-        stamina: 100,
-        staminaDrainRate: 20, // Units per second while running
-        staminaRegenRate: 10, // Units per second while not running
-    },
-    world: {
-        chunkSize: 16,
-        renderDistance: 5, // Chunks around the player
-    },
-    network: {
-        updateInterval: 100, // ms
-    }
-};
-
-export const config = {
-    character: {
         height: 1.8, // Approximate height for camera and positioning
         walkSpeed: 3.5, // Units per second
         runSpeed: 7.0, // Units per second
@@ -53,4 +34,3 @@ export const config = {
         fadeDuration: 0.2, // Seconds for cross-fade between animations
     }
 };
-

@@ -1,6 +1,8 @@
 <html>
 <head>
-    <title>Infinite Terrain World</title>
+    <title>Multiplayer Character World</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
     <link rel="stylesheet" href="style.css">
     <script type="importmap">
@@ -10,25 +12,46 @@
         "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
       }
     }
-  </script>
+    </script>
 </head>
 <body class="overflow-hidden bg-blue-100">
-    <div id="scene-container" class="absolute top-0 left-0 w-full h-full"></div>
-    <div class="absolute top-0 left-0 p-4">
-        <label for="color-picker" class="block mb-2 text-sm font-medium text-gray-900">Character Color:</label>
+    <!-- Scene Container -->
+    <div id="scene-container" class="absolute top-0 left-0 w-full h-full cursor-pointer"></div>
+
+    <!-- Top Left UI: Color Picker -->
+    <div class="absolute top-4 left-4 p-3 bg-white bg-opacity-75 rounded-lg shadow">
+        <label for="color-picker" class="block mb-1 text-sm font-medium text-gray-900">Color:</label>
         <input type="color" id="color-picker" value="#ff0000" class="p-1 h-10 w-14 block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none">
     </div>
-    <div class="absolute bottom-0 left-0 p-4 flex space-x-2">
-         <button id="dance-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Dance
-        </button>
-         <button id="run-toggle" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-            Run: OFF
-        </button>
+
+    <!-- Bottom Left UI: Buttons & Stamina -->
+    <div class="absolute bottom-4 left-4 flex flex-col items-start space-y-2">
+         <!-- Stamina Bar -->
+         <div id="stamina-bar-container" title="Stamina (Run/Jump)" class="w-48 h-4 bg-gray-300 rounded border border-gray-400 overflow-hidden">
+            <div id="stamina-bar" class="h-full bg-yellow-400 rounded-l transition-all duration-100 ease-linear" style="width: 100%;"></div>
+        </div>
+         <!-- Action Buttons -->
+        <div class="flex space-x-2">
+             <button id="dance-button" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition-colors duration-150 shadow">
+                Dance
+            </button>
+             <button id="run-toggle" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-150 shadow w-28 text-center">
+                Run: OFF
+            </button>
+        </div>
     </div>
-     <div id="stamina-bar-container" class="absolute bottom-16 left-4 w-48 h-4 bg-gray-300 rounded">
-        <div id="stamina-bar" class="h-full bg-yellow-400 rounded"></div>
+
+    <!-- Top Right UI: Instructions -->
+    <div class="absolute top-4 right-4 p-3 bg-white bg-opacity-75 rounded-lg text-sm text-gray-700 shadow max-w-xs">
+        <b class="block mb-1">Controls:</b>
+        - Click ground: Move<br>
+        - Spacebar: Jump<br>
+        - Run Button: Toggle Run<br>
+        - Dance Button: Toggle Dance<br>
+        - Color Picker: Change Color
     </div>
+
+    <!-- Main Script -->
     <script type="module" src="main.js"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
