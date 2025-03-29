@@ -4,42 +4,48 @@ import { config } from './config.js';
 import { PlayerController } from './PlayerController.js';
 import { WorldManager } from './WorldManager.js';
 
-// --- Basic Scene Setup ---
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // Sky blue background
-scene.fog = new THREE.Fog(0x87ceeb, config.world.chunkSize * (config.world.renderDistance - 1), config.world.chunkSize * (config.world.renderDistance + 1));
+// --- Scene Setup Function ---
+function setupSceneAndLighting() {
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87ceeb); // Sky blue background
+    scene.fog = new THREE.Fog(0x87ceeb, config.world.chunkSize * (config.world.renderDistance - 1), config.world.chunkSize * (config.world.renderDistance + 1));
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, config.world.chunkSize * (config.world.renderDistance + 2));
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
-document.getElementById('scene-container').appendChild(renderer.domElement);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, config.world.chunkSize * (config.world.renderDistance + 2));
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+    document.getElementById('scene-container').appendChild(renderer.domElement);
 
-// --- Lighting ---
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Slightly brighter ambient
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly stronger directional
-directionalLight.position.set(15, 30, 20); // Adjusted position
-directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.width = 2048; // Increased shadow map resolution
-directionalLight.shadow.mapSize.height = 2048;
-const shadowCamSize = config.world.chunkSize * 3; // Adjust shadow camera frustum size
-directionalLight.shadow.camera.left = -shadowCamSize;
-directionalLight.shadow.camera.right = shadowCamSize;
-directionalLight.shadow.camera.top = shadowCamSize;
-directionalLight.shadow.camera.bottom = -shadowCamSize;
-directionalLight.shadow.camera.near = 0.5;
-directionalLight.shadow.camera.far = 100; // Increased shadow distance
-directionalLight.shadow.bias = -0.0005; // Adjust shadow bias to reduce artifacts
-scene.add(directionalLight);
-scene.add(directionalLight.target); // Target needs to be added to scene for updates
+    // --- Lighting ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Slightly brighter ambient
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly stronger directional
+    directionalLight.position.set(15, 30, 20); // Adjusted position
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048; // Increased shadow map resolution
+    directionalLight.shadow.mapSize.height = 2048;
+    const shadowCamSize = config.world.chunkSize * 3; // Adjust shadow camera frustum size
+    directionalLight.shadow.camera.left = -shadowCamSize;
+    directionalLight.shadow.camera.right = shadowCamSize;
+    directionalLight.shadow.camera.top = shadowCamSize;
+    directionalLight.shadow.camera.bottom = -shadowCamSize;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 100; // Increased shadow distance
+    directionalLight.shadow.bias = -0.0005; // Adjust shadow bias to reduce artifacts
+    scene.add(directionalLight);
+    scene.add(directionalLight.target); // Target needs to be added to scene for updates
 
-// Debug helpers (optional)
-// const lightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
-// scene.add(lightHelper);
-// const shadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
-// scene.add(shadowHelper);
+    // Debug helpers (optional)
+    // const lightHelper = new THREE.DirectionalLightHelper(directionalLight, 5);
+    // scene.add(lightHelper);
+    // const shadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+    // scene.add(shadowHelper);
+
+    return { scene, camera, renderer, directionalLight };
+}
+// --- Call Scene Setup ---
+const { scene, camera, renderer, directionalLight } = setupSceneAndLighting();
 
 // --- Game State ---
 const room = new WebsimSocket(); // Available globally
@@ -111,10 +117,38 @@ loader.load(
     undefined, // Progress callback (optional)
     (error) => {
         console.error('An error happened loading the player model:', error);
+        // --- Enhanced Error Logging ---
+        let errorDetails = 'Unknown error.';
+        if (error instanceof ErrorEvent) {
+            errorDetails = `ErrorEvent: ${error.message || 'No message'}`;
+        } else if (error instanceof ProgressEvent && error.target) {
+             // Check if it's an HTTP error event within ProgressEvent
+            if (error.target instanceof XMLHttpRequest) {
+                errorDetails = `HTTP Error: Status ${error.target.status} - ${error.target.statusText}`;
+            } else {
+                 errorDetails = `Network/Progress error. Target type: ${error.target.constructor.name}`;
+            }
+        } else if (error instanceof Error) {
+            errorDetails = `Error: ${error.message}`;
+        } else {
+            try {
+                // Attempt to stringify for generic objects, might fail
+                errorDetails = JSON.stringify(error);
+            } catch {
+                errorDetails = 'Could not stringify error object.'
+            }
+        }
+        console.error('Detailed Error Info:', errorDetails, error); // Log the original error object too
+        // --- End Enhanced Error Logging ---
+
         // Display an error message to the user
         document.getElementById('scene-container').innerHTML = `
             <div class="flex items-center justify-center h-full">
-                <p class="text-red-600 bg-white p-4 rounded shadow">Error loading character model. Please refresh.</p>
+                <p class="text-red-600 bg-white p-4 rounded shadow max-w-md text-center">
+                    <b>Error loading character model.</b><br>
+                    <span class="text-xs text-gray-600">(${errorDetails})</span><br>
+                    Please try refreshing the page.
+                </p>
             </div>`;
     }
 );
@@ -143,7 +177,9 @@ async function initializeGame() {
     }
 
     setupUIListeners();
-    setupWorld();
+    
+    // Generate initial chunks around the starting position (0, 0)
+    worldManager.updateChunks(0, 0);
 
     // Initialize local player
     const initialColor = document.getElementById('color-picker').value || config.character.color;
@@ -309,11 +345,6 @@ function setupUIListeners() {
     });
 
     window.addEventListener('resize', onWindowResize, false);
-}
-
-function setupWorld() {
-    // Generate initial chunks around the starting position (0, 0)
-    worldManager.updateChunks(0, 0);
 }
 
 // --- Player Management ---
